@@ -15,6 +15,8 @@ const State = {
     View: 'home',
     // Текущий товар
     ActiveProductId: null,
+    // Текущий промокод:
+    ActivePromocode: null,
     // Все параметры фильтров/сортировки
     Filters: {
         search: '',
@@ -32,6 +34,7 @@ function InitUserData() {
         State.Cart = State.CurrentUser.cart || [];
         State.Favorites = State.CurrentUser.favorites || [];
         State.Orders = State.CurrentUser.orders || [];
+        State.ActivePromoCode = State.CurrentUser.activePromoCode || null;
     } else {
         State.Cart = [];
         State.Favorites = [];
@@ -46,6 +49,7 @@ function SaveUserData() {
     State.CurrentUser.cart = State.Cart;
     State.CurrentUser.favorites = State.Favorites;
     State.CurrentUser.orders = State.Orders;
+    State.CurrentUser.activePromoCode = State.ActivePromoCode;
 
     // Обновление пользователя в общем списке
     const userIndex = State.Users.findIndex(u => u.email === State.CurrentUser.email);

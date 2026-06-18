@@ -122,23 +122,34 @@ function RenderProductsGrid(elementId, products) {
     }
 
     grid.innerHTML = products.map(p => {
-        const isFav = State.Favorites.includes(p.id) ? 'style="color:red"' : '';
-        return `
-        <div class="product-card">
-            <img src="${p.thumbnail}" class="product-img" alt="${p.title}" onclick="Router('product', ${p.id})">
-            <div class="product-info">
-                <h3 onclick="Router('product', ${p.id})">${p.title}</h3>
-                <p>${p.price} $</p>
-                <p>⭐ ${p.rating}</p>
+    const isFav = State.Favorites.includes(p.id) ? 'style="color:red"' : '';
+
+    const hasDiscount = p.discountPercent && p.discountPercent > 0;
+    const discountedPrice = hasDiscount ? (p.price * (1 - p.discountPercent / 100)).toFixed(2) : p.price;
+
+    return `
+    <div class="product-card">
+        <img src="${p.thumbnail}" class="product-img" alt="${p.title}" onclick="Router('product', ${p.id})">
+        <div class="product-info">
+            <h3 onclick="Router('product', ${p.id})">${p.title}</h3>
+            
+            <!-- Блок цены со скидкой -->
+            <div style="display:flex; align-items:center; gap:8px; margin: 5px 0;">
+                ${hasDiscount ? `<span class="old-price-row">${p.price}$</span>` : ''}
+                <span style="color:var(--accent); font-weight:bold; font-size:1.1em;">${discountedPrice}$</span>
+                ${hasDiscount ? `<span class="discount-row">-${p.discountPercent}%</span>` : ''}
             </div>
-            <div class="flex-gap mt-20">
-                <button class="btn" onclick="AddToCart(${p.id})">В корзину</button>
-                <button class="btn btn-small" onclick="ToggleFavorite(${p.id})">
-                    <i class="fas fa-heart" ${isFav}></i>
-                </button>
-            </div>
+            
+            <p>⭐ ${p.rating}</p>
         </div>
-        `;
+        <div class="flex-gap mt-20">
+            <button class="btn" onclick="AddToCart(${p.id})">В корзину</button>
+            <button class="btn btn-small" onclick="ToggleFavorite(${p.id})">
+                <i class="fas fa-heart" ${isFav}></i>
+            </button>
+        </div>
+    </div>
+    `;
     }).join('');
 }
 
@@ -172,12 +183,14 @@ function RenderSlider(container) {
 
 // Рендер страницы товара
 function RenderProductPage(container) {
+    
     const product = State.Products.find(p => p.id === State.ActiveProductId);
     if (!product) {
         container.innerHTML = '<div class="container text-center"><h2>Товар не найден</h2><button class="btn w-auto" onclick="Router(\'home\')">Назад</button></div>';
         return;
     }
-
+    const hasDiscount = product.discountPercent && product.discountPercent > 0;
+    const discountedPrice = hasDiscount ? (product.price * (1 - product.discountPercent / 100)).toFixed(2) : product.price;
     const isFav = State.Favorites.includes(product.id);
     const favIconClass = isFav ? 'fas' : 'far';
 
@@ -196,7 +209,11 @@ function RenderProductPage(container) {
                 </div>
                 <div>
                     <h1>${product.title}</h1>
-                    <h2 style="color: var(--accent)">${product.price} $</h2>
+                    <div style="margin-bottom: 15px;">
+                        ${hasDiscount ? `<span class="old-price-row">${product.price}$</span>` : ''}
+                        <h2 style="color:var(--accent); display:inline;">${discountedPrice} $</h2>
+                        ${hasDiscount ? `<span class="discount-row">-${product.discountPercent}%</span>` : ''}
+                    </div>
                     <p>${product.description}</p>
                     <p><b>Бренд:</b> ${product.brand}</p>
                     <p><b>Рейтинг:</b> ${product.rating} / 5</p>
@@ -205,7 +222,6 @@ function RenderProductPage(container) {
                         <button class="btn" onclick="AddToCart(${product.id})">Добавить в корзину</button>
                         <button class="btn btn-secondary" onclick="ToggleFavorite(${product.id})">
                             <i class="${favIconClass} fa-heart"></i> 
-                            ${isFav ? 'В избранном' : 'В избранное'}
                         </button>
                     </div>
                 </div>
@@ -233,20 +249,25 @@ function RenderFavorites(container) {
 // Рендер корзины
 function RenderCart(container) {
     if (State.Cart.length === 0) {
-        container.innerHTML = '<h2 class="container text-center">Корзина пуста</h2>';
+        container.innerHTML = '<h2 class="container text-center" style="padding: 50px;">Корзина пуста</h2>';
         return;
     }
 
-    let total = 0;
-    const html = State.Cart.map(item => {
-        total += item.price * item.quantity;
+    // Получаем рассчитанные суммы
+    const totals = CalculateCartTotal();
+    // Рендер списка товаров 
+    const itemsHtml = State.Cart.map(item => {
+        const itemDiscount = item.discountPercent || 0;
+        const itemPrice = item.price * (1 - itemDiscount / 100);
+        
         return `
             <div class="cart-item">
                 <div class="flex-gap">
-                    <img src="${item.thumbnail}">
+                    <img src="${item.thumbnail}" style="width:50px; height:50px; object-fit:cover;">
                     <div>
                         <b>${item.title}</b><br>
-                        ${item.price} $ x ${item.quantity}
+                        ${itemPrice.toFixed(2)} $ x ${item.quantity}
+                        ${itemDiscount > 0 ? `<span style="color:#d32f2f; font-size:0.8em; margin-left:5px;">(-${itemDiscount}%)</span>` : ''}
                     </div>
                 </div>
                 <div class="flex-gap">
@@ -258,14 +279,69 @@ function RenderCart(container) {
         `;
     }).join('');
 
-    container.innerHTML = `
-        <h2 class="container">Корзина</h2>
-        <div class="cart-wrapper">${html}</div>
-        <div class="cart-wrapper text-center">
-            <h3>Итого: ${total.toFixed(2)} $</h3>
-            <button class="btn btn-special" onclick="Checkout()">Оформить заказ</button>
+    // Блок промокода и итогов
+    const summaryHtml = `
+        <div class="cart-summary">
+            <!-- Секция промокода -->
+            <div class="promo-section">
+                ${State.ActivePromoCode ? `
+                    <div class="promo-applied">
+                        <span>✅ Применен: <b>${State.ActivePromoCode}</b> (-${totals.promo.type === 'percent' ? totals.promo.discount + '%' : totals.promo.discount + '$'})</span>
+                        <button class="btn btn-small btn-danger" onclick="RemovePromoCode()">X</button>
+                    </div>
+                ` : `
+                    <div class="promo-input-group">
+                        <input type="text" id="promo-code-input" placeholder="Введите промокод" style="flex:1;">
+                        <button class="btn" style="width:auto;" onclick="ApplyPromoCode(document.getElementById('promo-code-input').value)">Применить</button>
+                    </div>
+                `}
+            </div>
+            
+            <!-- Секция цены -->
+            <div class="price-row"><span>Подытог:</span> <span>${totals.subtotal.toFixed(2)} $</span></div>
+            ${totals.discount > 0 ? `
+                <div class="price-row discount">
+                    <span>Скидка (${totals.promo.code}):</span> 
+                    <span>-${totals.discount.toFixed(2)} $</span>
+                </div>
+            ` : ''}
+            <div class="price-row total">
+                <span>Итого:</span> 
+                <span>${totals.total.toFixed(2)} $</span>
+            </div>
+            
+            <button class="btn btn-full mt-20" onclick="Checkout(${totals.total})">Оформить заказ</button>
         </div>
     `;
+
+    container.innerHTML = `
+        <h2 class="container">Корзина</h2>
+        <div class="cart-wrapper">${itemsHtml}</div>
+        <div class="cart-wrapper">${summaryHtml}</div>
+    `;
+}
+
+// Оформление заказа
+function Checkout(finalTotal) {
+    if (!State.CurrentUser) {
+        alert('Для оформления заказа необходимо войти в аккаунт!');
+        Router('profile');
+        return;
+    }
+    
+    const newOrder = {
+        date: new Date().toISOString(),
+        items: [...State.Cart],
+        total: finalTotal || 0, 
+        promoCode: State.ActivePromoCode || null
+    };
+    
+    State.Orders.push(newOrder);
+    State.Cart = [];
+    State.ActivePromoCode = null; 
+    SaveUserData();
+    alert(`Заказ оформлен! Сумма: ${newOrder.total.toFixed(2)} $`);
+    Render();
 }
 
 // Рендер профиля

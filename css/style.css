@@ -311,6 +311,74 @@ input, select, textarea {
     border-radius: 4px;
 }
 
+/* Корзина */
+.cart-summary {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+/* промокоды */
+.promo-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #333;
+}
+
+.promo-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.promo-applied {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(3, 218, 198, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    color: var(--secondary);
+    font-size: 0.9rem;
+}
+
+/* Скидки */
+.old-price-row{
+    text-decoration:line-through; 
+    opacity:0.6; 
+    font-size:1.2rem; 
+    margin-right: 10px;
+}
+
+.discount-row{
+    background:#d32f2f; 
+    color:white; 
+    padding:4px 8px; 
+    border-radius:4px; 
+    font-size:0.9rem; 
+    margin-left: 10px; 
+    vertical-align: middle;
+}
+/* Итоговая цена */
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.price-row.discount {
+    color: var(--secondary);
+}
+
+.price-row.total {
+    font-weight: bold;
+    font-size: 1.3rem;
+    margin-top: 10px;
+    border-top: 1px solid #333;
+    padding-top: 10px;
+}
+
 /* Общие классы */
 .text-center { text-align: center; }
 .mx-auto { margin-left: auto; margin-right: auto; }
