@@ -27,10 +27,10 @@ function RenderHome(container) {
         
         <select id="category-select">
             <option value="all">Все категории</option>
-            <option value="smartphones">Смартфоны</option>
+            <option value="beauty">косметика</option>
             <option value="laptops">Ноутбуки</option>
             <option value="fragrances">Парфюмерия</option>
-            <option value="skincare">Уход за кожей</option>
+            <option value="kitchen-accessories">Кухонные принадлежности</option>
             <option value="groceries">Продукты</option>
             <option value="home-decoration">Декор</option>
         </select>
