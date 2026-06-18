@@ -202,10 +202,10 @@ function RenderProductPage(container) {
             
             <div class="product-detail">
                 <div class="product-gallery">
-                    <img src="${product.images[0]}" id="main-product-img">
                     <div class="thumbnails">
                         ${product.images.map(img => `<img src="${img}" onclick="document.getElementById('main-product-img').src='${img}'">`).join('')}
                     </div>
+                    <img src="${product.images[0]}" id="main-product-img">
                 </div>
                 <div>
                     <h1>${product.title}</h1>

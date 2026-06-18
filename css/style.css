@@ -240,12 +240,18 @@ input, select, textarea {
     margin-top: 20px;
 }
 
+.product-gallery{
+    display: flex;
+    flex-direction: row;
+}
+
 .product-gallery img {
-    width: 100%;
+    width: 50%;
     border-radius: 8px;
 }
 
 .thumbnails {
+    flex-direction: column;
     display: flex;
     gap: 10px;
     margin-top: 10px;
